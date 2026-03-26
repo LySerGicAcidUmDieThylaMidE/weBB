@@ -1,4 +1,4 @@
-Наименование: LudereZone
+#Наименование: LudereZone
 
     Краткое описание:
 LudereZone — это современное веб-приложение для продажи игрушек. Платформа позволяет пользователям просматривать наиболее значимые характеристики для выбора игрушек, фильтровать каталог, добавлять товары в избранное и управлять профилем. Административная панель обеспечивает полное управление ассортиментом.
@@ -115,10 +115,11 @@ User: class User(Base):
 
 Избранное: class Favorite(Base):
     __tablename__ = "favorites"
-    
+    ```
     user_id = Column(Integer, ForeignKey("users.id"), primary_key=True)
     toy_id = Column(Integer, ForeignKey("toys.id"), primary_key=True)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
+    ```
 
 
 Метод	-> Эндпоинт ->	Описание -> Тело запроса ->	Ответ
