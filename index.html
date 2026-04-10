@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>LudereZone</title>
+</head>
+<body>
+
+<h1>LudereZone</h1>
+
+<h2>Регистрация</h2>
+<input id="reg_login" placeholder="Логин"><br>
+<input id="reg_password" type="password" placeholder="Пароль"><br>
+<button onclick="register()">Зарегистрироваться</button>
+
+<h2>Вход</h2>
+<input id="log_login" placeholder="Логин"><br>
+<input id="log_password" type="password" placeholder="Пароль"><br>
+<button onclick="login()">Войти</button>
+
+<p id="result"></p>
+
+<script>
+async function register() {
+    const res = await fetch("/api/register", {
+        method: "POST",
+        headers: {"Content-Type": "application/json"},
+        body: JSON.stringify({
+            login: document.getElementById("reg_login").value,
+            password: document.getElementById("reg_password").value
+        })
+    });
+
+    const data = await res.json();
+    document.getElementById("result").innerText = JSON.stringify(data);
+}
+
+async function login() {
+    const res = await fetch("/api/login", {
+        method: "POST",
+        headers: {"Content-Type": "application/json"},
+        body: JSON.stringify({
+            login: document.getElementById("log_login").value,
+            password: document.getElementById("log_password").value
+        })
+    });
+
+    const data = await res.json();
+    document.getElementById("result").innerText = JSON.stringify(data);
+}
+</script>
+
+</body>
+</html>
