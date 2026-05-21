@@ -11,10 +11,13 @@ def get_toys():
         {
             "id": t.id,
             "name": t.name,
+            "description": t.description,
             "price": float(t.price),
             "manufacturer": t.manufacturer,
             "quantity": t.quantity,
-            "min_age": t.min_age
+            "min_age": t.min_age,
+            "image_url": t.image_url,
+            "category": t.category
         } for t in toys
     ])
 
