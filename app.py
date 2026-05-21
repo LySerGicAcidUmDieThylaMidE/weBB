@@ -139,6 +139,92 @@ def change_password():
         "message":"Пароль изменён"
     })
 
+# ------------------ toys ------------------
+
+@app.route("/api/toys")
+def get_toys():
+    toys = Toy.query.all()
+
+    return jsonify([
+        {
+            "id": t.id,
+            "name": t.name,
+            "description": t.description,
+            "price": float(t.price),
+            "manufacturer": t.manufacturer,
+            "quantity": t.quantity,
+            "min_age": t.min_age,
+            "image_url": t.image_url,
+            "category": t.category
+        } for t in toys
+    ])
+
+
+@app.route("/api/toys/<int:id>")
+def get_toy(id):
+
+    toy = Toy.query.get_or_404(id)
+
+    return jsonify({
+        "id": toy.id,
+        "name": toy.name,
+        "description": toy.description,
+        "price": float(toy.price),
+        "manufacturer": toy.manufacturer,
+        "quantity": toy.quantity,
+        "min_age": toy.min_age,
+        "image_url": toy.image_url,
+        "category": toy.category
+    })
+
+
+@app.route("/api/toys/search")
+def search_toys():
+    q = request.args.get("q", "")
+
+    toys = Toy.query.filter(Toy.name.contains(q)).all()
+
+    return jsonify([
+        {
+            "id": t.id,
+            "name": t.name,
+            "description": t.description,
+            "price": float(t.price),
+            "manufacturer": t.manufacturer,
+            "quantity": t.quantity,
+            "min_age": t.min_age,
+            "image_url": t.image_url,
+            "category": t.category
+        } for t in toys
+    ])
+
+
+@app.route("/api/toys/age")
+def toys_by_age():
+    age = request.args.get("age", type=int)
+
+    if age is None:
+        return jsonify([])
+
+    toys = Toy.query.filter(Toy.min_age <= age).all()
+
+    return jsonify([
+        {
+            "id": t.id,
+            "name": t.name,
+            "description": t.description,
+            "price": float(t.price),
+            "manufacturer": t.manufacturer,
+            "quantity": t.quantity,
+            "min_age": t.min_age,
+            "image_url": t.image_url,
+            "category": t.category
+        } for t in toys
+    ])
+
+
+
+
 
 
 
