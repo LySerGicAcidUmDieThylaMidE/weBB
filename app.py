@@ -292,6 +292,95 @@ def remove_from_cart(id):
     })
 
 
+# ------------------ favorites ------------------
+
+@app.route("/api/favorites", methods=["POST"])
+def add_favorite():
+
+    if "user_id" not in session:
+        return jsonify({"error": "auth"}), 403
+
+    data = request.json
+
+    exists = Favorite.query.filter_by(
+        user_id=session["user_id"],
+        toy_id=data["toy_id"]
+    ).first()
+
+    if exists:
+        return jsonify({
+            "message":"already exists"
+        })
+
+    favorite = Favorite(
+        user_id=session["user_id"],
+        toy_id=data["toy_id"]
+    )
+
+    db.session.add(favorite)
+    db.session.commit()
+
+    return jsonify({
+        "message":"added"
+    })
+
+
+@app.route("/api/favorites")
+def get_favorites():
+
+    if "user_id" not in session:
+        return jsonify([])
+
+    favorites = Favorite.query.filter_by(
+        user_id=session["user_id"]
+    ).all()
+
+    result = []
+
+    for f in favorites:
+
+        toy = Toy.query.get(f.toy_id)
+
+        if toy:
+
+            result.append({
+                "id": toy.id,
+                "name": toy.name,
+                "description": toy.description,
+                "price": float(toy.price),
+                "manufacturer": toy.manufacturer,
+                "quantity": toy.quantity,
+                "min_age": toy.min_age,
+                "image_url": toy.image_url,
+                "category": toy.category
+            })
+
+    return jsonify(result)
+
+
+@app.route(
+    "/api/favorites/<int:toy_id>",
+    methods=["DELETE"]
+)
+def remove_favorite(toy_id):
+
+    if "user_id" not in session:
+        return jsonify({"error":"auth"}), 403
+
+    favorite = Favorite.query.filter_by(
+        user_id=session["user_id"],
+        toy_id=toy_id
+    ).first()
+
+    if favorite:
+
+        db.session.delete(favorite)
+        db.session.commit()
+
+    return jsonify({
+        "message":"removed"
+    })
+
 
 
 
