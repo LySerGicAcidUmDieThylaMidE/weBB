@@ -61,7 +61,8 @@ def register():
 
     if not data.get("login") or not data.get("password"):
         return jsonify({"error": "Заполните все поля"}), 400
-
+    if len(data["password"]) < 6:
+        return jsonify({"error": "Пароль должен быть минимум 6 символов"}), 400
     if User.query.filter_by(login=data["login"]).first():
         return jsonify({"error": "Пользователь уже существует"}), 400
 
