@@ -53,7 +53,91 @@ class Favorite(db.Model):
     toy_id = db.Column(db.Integer)
 
 
+# ------------------ auth ------------------
 
+@app.route("/api/register", methods=["POST"])
+def register():
+    data = request.json
+
+    if not data.get("login") or not data.get("password"):
+        return jsonify({"error": "Заполните все поля"}), 400
+
+    if User.query.filter_by(login=data["login"]).first():
+        return jsonify({"error": "Пользователь уже существует"}), 400
+
+    user = User(
+        login=data["login"],
+        password_hash=generate_password_hash(data["password"]),
+        role=0
+    )
+
+    db.session.add(user)
+    db.session.commit()
+
+    return jsonify({"message": "registered"})
+
+
+@app.route("/api/login", methods=["POST"])
+def login():
+    data = request.json
+
+    user = User.query.filter_by(login=data.get("login")).first()
+
+    if user and check_password_hash(user.password_hash, data.get("password")):
+        session["user_id"] = user.id
+        session["user"] = user.login
+        session["role"] = user.role
+        return jsonify({"message": "success"})
+
+    return jsonify({"error": "Неверный логин или пароль"}), 401
+
+
+@app.route("/api/me")
+def me():
+    if "user_id" not in session:
+        return jsonify({"user": None})
+
+    return jsonify({
+        "user": {
+            "id": session["user_id"],
+            "role": session["role"],
+            "login": session["user"]
+        }
+    })
+
+
+@app.route("/api/logout")
+def logout():
+    session.clear()
+    return jsonify({"message": "logged out"})
+
+@app.route("/api/change-password", methods=["POST"])
+def change_password():
+
+    if "user_id" not in session:
+        return jsonify({"error":"auth"}), 403
+
+    data = request.json
+
+    user = User.query.get(session["user_id"])
+
+    if not check_password_hash(
+        user.password_hash,
+        data["old_password"]
+    ):
+        return jsonify({
+            "error":"Старый пароль неверный"
+        }), 400
+
+    user.password_hash = generate_password_hash(
+        data["new_password"]
+    )
+
+    db.session.commit()
+
+    return jsonify({
+        "message":"Пароль изменён"
+    })
 
 
 
