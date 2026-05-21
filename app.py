@@ -1,6 +1,17 @@
-from flask import Flask
-from config import Config
-from models import db
+from flask import Flask, request, jsonify, session, send_from_directory
+from flask_sqlalchemy import SQLAlchemy
+from werkzeug.security import check_password_hash, generate_password_hash
+
+app = Flask(
+    __name__,
+    static_folder="../static"
+)
+
+app.secret_key = "secret_key"
+app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+pymysql://root:1111@localhost/luderezone'
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+
+db = SQLAlchemy(app)
 
 def create_app():
     app = Flask(__name__)
