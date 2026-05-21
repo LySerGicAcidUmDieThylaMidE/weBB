@@ -223,6 +223,73 @@ def toys_by_age():
     ])
 
 
+# ------------------ cart ------------------
+
+@app.route("/api/cart", methods=["POST"])
+def add_to_cart():
+    if "user_id" not in session:
+        return jsonify({"error": "auth"}), 403
+
+    data = request.json
+
+    item = CartItem(
+        user_id=session["user_id"],
+        toy_id=data["toy_id"],
+        quantity=1
+    )
+
+    db.session.add(item)
+    db.session.commit()
+
+    return jsonify({"message": "added"})
+
+@app.route("/api/cart")
+def get_cart():
+
+    if "user_id" not in session:
+        return jsonify([])
+
+    items = CartItem.query.filter_by(
+        user_id=session["user_id"]
+    ).all()
+
+    result = []
+
+    for item in items:
+
+        toy = Toy.query.get(item.toy_id)
+
+        if toy:
+
+            result.append({
+                "cart_id": item.id,
+                "quantity": item.quantity,
+
+                "toy": {
+                    "id": toy.id,
+                    "name": toy.name,
+                    "price": float(toy.price),
+                    "image_url": toy.image_url
+                }
+            })
+
+    return jsonify(result)
+
+@app.route("/api/cart/<int:id>", methods=["DELETE"])
+def remove_from_cart(id):
+
+    if "user_id" not in session:
+        return jsonify({"error":"auth"}), 403
+
+    item = CartItem.query.get(id)
+
+    if item:
+        db.session.delete(item)
+        db.session.commit()
+
+    return jsonify({
+        "message":"removed"
+    })
 
 
 
