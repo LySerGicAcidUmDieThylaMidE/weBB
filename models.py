@@ -8,6 +8,7 @@ class User(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     login = db.Column(db.String(50), unique=True, nullable=False)
     password_hash = db.Column(db.String(255), nullable=False)
+    secret_word = db.Column(db.String(255), nullable=False)
     role = db.Column(db.Integer, default=0)
 
 
