@@ -1,6 +1,7 @@
 from flask import Flask, request, jsonify, session, send_from_directory
 from flask_sqlalchemy import SQLAlchemy
 from werkzeug.security import check_password_hash, generate_password_hash
+import re
 
 app = Flask(
     __name__,
@@ -20,6 +21,7 @@ class User(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     login = db.Column(db.String(50), unique=True, nullable=False)
     password_hash = db.Column(db.String(255), nullable=False)
+    secret_word = db.Column(db.String(255), nullable=False)
     role = db.Column(db.Integer, default=0)
 
 
@@ -46,9 +48,7 @@ class CartItem(db.Model):
 
 class Favorite(db.Model):
     __tablename__ = "favorites"
-
     id = db.Column(db.Integer, primary_key=True)
-
     user_id = db.Column(db.Integer)
     toy_id = db.Column(db.Integer)
 
@@ -57,12 +57,34 @@ class Favorite(db.Model):
 
 @app.route("/api/register", methods=["POST"])
 def register():
+
     data = request.json
 
-    if not data.get("login") or not data.get("password"):
+    if not data.get("login") or not data.get("password") or not data.get("secret_word"):
         return jsonify({"error": "Заполните все поля"}), 400
-    if len(data["password"]) < 6:
-        return jsonify({"error": "Пароль должен быть минимум 6 символов"}), 400
+
+    password = data["password"]
+
+    if len(password) < 6:
+        return jsonify({
+            "error": "Пароль должен быть минимум 6 символов"
+        }), 400
+
+    if not re.search(r"[A-ZА-Я]", password):
+        return jsonify({
+            "error": "Нужна хотя бы одна заглавная буква"
+        }), 400
+
+    if not re.search(r"\d", password):
+        return jsonify({
+            "error": "Нужна хотя бы одна цифра"
+        }), 400
+
+    if not re.search(r"[!@#$%^&*()_+\-=]", password):
+        return jsonify({
+            "error": "Нужен хотя бы один спецсимвол"
+        }), 400
+
     if User.query.filter_by(login=data["login"]).first():
         return jsonify({"error": "Пользователь уже существует"}), 400
 
