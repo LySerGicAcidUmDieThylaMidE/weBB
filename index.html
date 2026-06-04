@@ -56,7 +56,8 @@ h1,h2,h3{
 
 input{
   width:90%;
-  padding:14px;
+  height:60px;
+  padding:10px;
   margin-top:15px;
   border:none;
   border-radius:12px;
@@ -67,9 +68,10 @@ input{
 
 button{
   border:none;
-  border-radius:12px;
-  padding:12px 18px;
-  margin-top:15px;
+  border-radius:5px;
+  height:60px;
+  padding:10px 16px;
+  margin-top:0px;
   cursor:pointer;
   background:linear-gradient(135deg,#32CD32,#228B22);
   color:white;
@@ -91,7 +93,7 @@ button:hover{
 
 .nav-left{
   display:flex;
-  gap:15px;
+  gap:20px;
 }
 
 .nav-title{
@@ -108,12 +110,12 @@ button:hover{
 .toys-grid{
   display:grid;
   grid-template-columns:repeat(auto-fill,minmax(260px,1fr));
-  gap:2px;
+  gap:70px;
 }
 
 .toy-card{
   background:rgba(255,255,255,0.06);
-  border-radius:20px;
+  border-radius:10px;
   padding:20px;
   transition:0.3s;
   border:10px solid rgba(255,255,255,0.05);
@@ -203,6 +205,128 @@ select{
   margin-top:10px;
   color:#cbd5e1;
 }
+
+.notification{
+  position:fixed;
+  top:20px;
+  right:20px;
+  z-index:9999;
+  padding:15px 25px;
+  border-radius:12px;
+  background:
+    linear-gradient(
+      135deg,
+      #32CD32,
+      #228B22
+    );
+  color:white;
+  font-weight:bold;
+  box-shadow:
+    0 0 20px rgba(
+      50,
+      205,
+      50,
+      0.5
+    );
+  animation:
+    slideIn 0.3s ease;
+}
+@keyframes slideIn{
+  from{
+    opacity:0;
+    transform:
+      translateX(100%);
+  }
+  to{
+    opacity:1;
+    transform:
+      translateX(0);
+  }
+}
+
+@media (max-width: 768px){
+
+  .container{
+    padding:15px;
+  }
+
+  .navbar{
+    flex-direction:column;
+    gap:15px;
+    align-items:stretch;
+  }
+
+  .nav-left{
+    flex-wrap:wrap;
+    justify-content:center;
+    gap:10px;
+  }
+
+  .nav-left button{
+    flex:1;
+    min-width:140px;
+  }
+
+  .nav-title{
+    text-align:center;
+    font-size:24px;
+  }
+
+  .home-box{
+    padding:25px;
+  }
+
+  .home-box h1{
+    font-size:30px;
+  }
+
+  .home-box p{
+    font-size:16px;
+  }
+
+  .toys-grid{
+    grid-template-columns:1fr;
+    gap:20px;
+  }
+
+  .toy-card{
+    padding:15px;
+  }
+
+  .toy-image{
+    height:180px;
+  }
+
+  .search-bar{
+    flex-direction:column;
+  }
+
+  .search-bar input,
+  .search-bar button,
+  .search-bar select{
+    width:100%;
+  }
+
+  input{
+    width:100%;
+  }
+
+  button{
+    width:100%;
+  }
+
+  .auth-card{
+    width:100%;
+  }
+
+  .notification{
+    left:10px;
+    right:10px;
+    top:10px;
+  }
+
+}
+
 </style>
 </head>
 
@@ -213,17 +337,25 @@ select{
 
 function App() {
   const [user, setUser] = React.useState(null);
-  const [page, setPage] = React.useState("login");
+  const [page, setPage] = React.useState(window.location.pathname || "/");
   const [login, setLogin] = React.useState("");
   const [oldPassword, setOldPassword] = React.useState("");
   const [newPassword, setNewPassword] = React.useState("");
+
+  const [secretWord, setSecretWord] = React.useState("");
+
   const [password, setPassword] = React.useState("");
   const [error, setError] = React.useState("");
   const [success, setSuccess] = React.useState("");
 
+  const [notification, setNotification] = React.useState("");
 
   const [selectedToy, setSelectedToy] = React.useState(null);
   const [toys, setToys] = React.useState([]);
+
+  const [offset, setOffset] = React.useState(0);
+  const [hasMore, setHasMore] = React.useState(true);
+
   const [query, setQuery] = React.useState("");
   const [age, setAge] = React.useState("");
   const [favorites, setFavorites] = React.useState([])
@@ -232,7 +364,31 @@ function App() {
   const [category, setCategory] = React.useState("");
   const [sort, setSort] = React.useState("");
 
+  const navigate = (path) => {
+  window.history.pushState({}, "", path);
+  setPage(path);
+};
 
+
+  React.useEffect(() => {
+
+  const onPopState = () => {
+    setPage(window.location.pathname);
+  };
+
+  window.addEventListener(
+    "popstate",
+    onPopState
+  );
+
+  return () => {
+    window.removeEventListener(
+      "popstate",
+      onPopState
+    );
+  };
+
+}, []);
 
 
   React.useEffect(() => {
@@ -245,6 +401,14 @@ function App() {
       }
     });
 }, []);
+
+    React.useEffect(() => {
+
+      if (user && page === "/") {
+        navigate("/home");
+      }
+
+    }, [user]);
 
   // ---------------- auth ----------------
 
@@ -261,15 +425,17 @@ function App() {
       setError(data.error);
     } else {
       setUser({login});
-      setPage("home");
+      navigate("/home");
     }
   };
 
   const handleRegister = async () => {
+    setError("");
+    setSuccess("");
     const res = await fetch("/api/register", {
       method: "POST",
       headers: {"Content-Type": "application/json"},
-      body: JSON.stringify({login, password})
+      body: JSON.stringify({login, password, secret_word: secretWord})
     });
 
     const data = await res.json();
@@ -277,16 +443,57 @@ function App() {
     if (!res.ok) {
       setError(data.error);
     } else {
-      setPage("login");
+      navigate("/login");
     }
   };
 
   const logout = async () => {
     await fetch("/api/logout");
     setUser(null);
-    setPage("login");
+    navigate("/login");
   };
-  const changePassword = async () => {
+
+
+const resetPassword = async () => {
+
+  setError("");
+  setSuccess("");
+
+  const res = await fetch(
+    "/api/reset-password",
+    {
+      method:"POST",
+
+      headers:{
+        "Content-Type":"application/json"
+      },
+
+      body:JSON.stringify({
+        login,
+        secret_word: secretWord,
+        new_password: newPassword
+      })
+    }
+  );
+
+  const data = await res.json();
+
+  if(res.ok){
+
+    setSuccess("Пароль восстановлен");
+
+    navigate("/login");
+  }
+  else{
+    setError(data.error);
+  }
+};
+
+
+const changePassword = async () => {
+
+  setError("");
+  setSuccess("");
 
   const res = await fetch(
     "/api/change-password",
@@ -305,21 +512,39 @@ function App() {
   const data = await res.json();
 
   if(res.ok){
-    alert("Пароль изменён");
+
+    setSuccess("Пароль изменён");
 
     setOldPassword("");
     setNewPassword("");
   }
   else{
-    alert(data.error);
+    setError(data.error);
   }
 };
+
+
+
   // ---------------- data ----------------
 
-  const loadToys = async () => {
-    const res = await fetch("/api/toys");
-    setToys(await res.json());
-  };
+    const LIMIT = 8;
+    const loadToys = async (reset = false) => {
+      const currentOffset = reset ? 0 : offset;
+
+      const res = await fetch(`/api/toys?limit=${LIMIT}&offset=${currentOffset}`);
+      const data = await res.json();
+
+      if (reset) {
+        setToys(data.items);
+      } else {
+        setToys(prev => [...prev, ...data.items]);
+      }
+
+      const newOffset = currentOffset + data.items.length;
+      setOffset(newOffset);
+
+      setHasMore(newOffset < data.total);
+    };
 
   const search = async () => {
     const res = await fetch(`/api/toys/search?q=${query}`);
@@ -328,8 +553,9 @@ function App() {
 
   const filterAndSort = async () => {
 
-  const res = await fetch("/api/toys");
-  let data = await res.json();
+  const res = await fetch("/api/toys?limit=9999");
+  let result = await res.json();
+  let data = result.items;
 
   //фильтр
   if (category) {
@@ -357,7 +583,7 @@ function App() {
 };
 
   const searchAge = async () => {
-    const res = await fetch(`/api/toys/age?age=${age}`);
+    const res = await fetch(`/api/toys/age?age=${age}`); ////////////////////////////////
     setToys(await res.json());
   };
 
@@ -367,7 +593,7 @@ function App() {
       headers: {"Content-Type": "application/json"},
       body: JSON.stringify({toy_id: id})
     });
-    alert("Добавлено");
+    showNotification("Товар добавлен в корзину");
   };
 
   const loadCart = async () => {
@@ -381,7 +607,6 @@ const removeFromCart = async (id) => {
   await fetch(`/api/cart/${id}`, {
     method:"DELETE"
   });
-
   loadCart();
 };
 
@@ -389,7 +614,7 @@ const openToy = async (id) => {
   const res = await fetch(`/api/toys/${id}`);
   const data = await res.json();
   setSelectedToy(data);
-  setPage("toy");
+  setPage("/toy");
 };
 
   const addToFavorites = async (id) => {
@@ -398,12 +623,11 @@ const openToy = async (id) => {
     headers:{
       "Content-Type":"application/json"
     },
-
     body:JSON.stringify({
       toy_id:id
     })
   });
-  alert("Добавлено в любимку");
+  showNotification("Добавлено в любимки");
 };
 
 const loadFavorites = async () => {
@@ -414,50 +638,128 @@ const loadFavorites = async () => {
 
 
 const removeFavorite = async (id) => {
-
   await fetch(`/api/favorites/${id}`, {
     method:"DELETE"
   });
-
   loadFavorites();
+};
+
+const showNotification = (message) => {
+  setNotification(message);
+  setTimeout(() => {
+    setNotification("");
+  }, 3000);
 };
 
   // ---------------- UI ----------------
 
 if (!user) {
+
+  if (
+    page !== "/login" &&
+    page !== "/register" &&
+    page !== "/reset"
+  ) {
+
+    navigate("/login");
+    return null;
+  }
+
   return (
     <div className="auth-wrapper">
 
       <div className="card auth-card">
 
         <h2>
-          {page === "login"
-            ? "Вход в LudereZone"
-            : "Регистрация"}
+          {page === "/login" && "Вход в LudereZone"}
+
+          {page === "/register" && "Регистрация"}
+
+          {page === "/reset" && "Восстановление пароля"}
         </h2>
 
-        <input
-          placeholder="Логин"
-          value={login}
-          onChange={e => setLogin(e.target.value)}
-        />
+                {page === "/reset" ? (
 
-        <input
-          type="password"
-          placeholder="Пароль"
-          value={password}
-          onChange={e => setPassword(e.target.value)}
-        />
+          <div>
 
-        {page === "login" ? (
-          <button onClick={handleLogin}>
-            Войти
-          </button>
+            <input
+              placeholder="Логин"
+              value={login}
+              onChange={e =>
+                setLogin(e.target.value)
+              }
+            />
+
+            <input
+              placeholder="Ключевое слово"
+              value={secretWord}
+              onChange={e =>
+                setSecretWord(e.target.value)
+              }
+            />
+
+            <input
+              type="password"
+              placeholder="Новый пароль"
+              value={newPassword}
+              onChange={e =>
+                setNewPassword(e.target.value)
+              }
+            />
+
+            <button
+              onClick={resetPassword}
+            >
+              Восстановить пароль
+            </button>
+
+          </div>
+
         ) : (
-          <button onClick={handleRegister}>
-            Зарегистрироваться
-          </button>
+
+          <div>
+
+            <input
+              placeholder="Логин"
+              value={login}
+              onChange={e =>
+                setLogin(e.target.value)
+              }
+            />
+
+            <input
+              type="password"
+              placeholder="Пароль"
+              value={password}
+              onChange={e =>
+                setPassword(e.target.value)
+              }
+            />
+
+            {page === "/login" ? (
+
+              <button onClick={handleLogin}>
+                Войти
+              </button>
+
+            ) : (
+
+              <button onClick={handleRegister}>
+                Зарегистрироваться
+              </button>
+
+            )}
+
+          </div>
+
         )}
+
+        <div
+          className="link"
+          onClick={() => navigate("/reset")}
+        >
+          Забыли пароль?
+        </div>
 
         {error && <div className="error">{error}</div>}
         {success && <div className="success">{success}</div>}
@@ -465,16 +767,28 @@ if (!user) {
         <div
           className="link"
           onClick={() => {
-            setPage(page === "login" ? "register" : "login");
+            navigate(page === "/login" ? "/register" : "/login");
             setError("");
             setSuccess("");
           }}
         >
-          {page === "login"
+          {page === "/login"
             ? "Нет аккаунта?"
             : "Уже есть аккаунт?"}
         </div>
 
+
+        {page === "/register" && (
+
+          <input
+            placeholder="Ключевое слово"
+            value={secretWord}
+            onChange={e =>
+              setSecretWord(e.target.value)
+            }
+          />
+
+        )}
 
       </div>
     </div>
@@ -483,10 +797,16 @@ if (!user) {
   return (
   <div className="container">
 
+    {notification && (
+      <div className="notification">
+        {notification}
+      </div>
+    )}
+
     <div className="navbar">
 
       <button onClick={() => {
-         setPage("cart");
+         navigate("/cart");
          loadCart();
       }}>
         🛒 Корзина
@@ -494,13 +814,13 @@ if (!user) {
 
 
       <button onClick={() => {
-        setPage("favorites");
+        navigate("/favorites");
         loadFavorites();
       }}>
         ❤️ Любимки
       </button>
 
-      <button onClick={() => setPage("profile")}>
+      <button onClick={() => navigate("/profile")}>
           👤 Профиль
       </button>
 
@@ -509,18 +829,18 @@ if (!user) {
       </div>
 
       <div className="nav-left">
-        <button onClick={() => setPage("home")}>
+        <button onClick={() => navigate("/home")}>
           Главная
         </button>
 
         <button onClick={() => {
-          setPage("toys");
-          loadToys();
+          navigate("/toys");
+          loadToys(true);
         }}>
           Игрушки
         </button>
 
-        <button onClick={() => setPage("age")}>
+        <button onClick={() => navigate("/age")}>
           Подбор по возрасту
         </button>
 
@@ -530,19 +850,114 @@ if (!user) {
       </div>
     </div>
 
-    {page === "home" && (
-      <div className="card home-box">
+    {page === "/home" && (
 
-        <h1>Добро пожаловать 👾</h1>
+      <div>
 
-        <p>
-          Единственный магазин игрушек для тебя, смирись
-        </p>
+        <div className="card home-box">
+
+          <h1>🎮 Добро пожаловать в LudereZone</h1>
+
+          <div className="toys-grid">
+              <div className="toy-card">
+                <h2>6+</h2>
+                <p>Товаров</p>
+              </div>
+
+              <div className="toy-card">
+                <h2>11+</h2>
+                <p>Покупателей</p>
+              </div>
+
+              <div className="toy-card">
+                <h2>24/7</h2>
+                <p>Поддержка</p>
+              </div>
+          </div>
+
+          <p>
+            Магазин всяких игрушек, а чего тебе ещё надо?
+          </p>
+
+          <button onClick={() => {
+            navigate("/toys");
+            loadToys(true);
+          }}>
+            Перейти в каталог
+          </button>
+
+        </div>
+
+        <div
+          className="card"
+          style={{marginTop:"25px"}}
+        >
+
+          <h2>Почему выбирают нас?</h2>
+
+          <p>✅ Более 2 товаров в каталоге</p>
+          <p>✅ Быстрая обработка заказов</p>
+          <p>✅ Удобный поиск и фильтрация</p>
+
+        </div>
+
+        <div
+          className="card"
+          style={{marginTop:"25px"}}
+        >
+
+          <h2>Популярные категории</h2>
+
+          <div className="toys-grid">
+
+            <div className="toy-card">
+              Пазлы
+            </div>
+
+            <div className="toy-card">
+              Конструкторы
+            </div>
+
+            <div className="toy-card">
+              Мягкие игрушки
+            </div>
+
+          </div>
+
+        </div>
+
+        <div
+          className="card"
+          style={{marginTop:"25px"}}
+        >
+
+          <h2>Наши партнёры</h2>
+
+          <p>Савушкин</p>
+          <p>Sumsung</p>
+          <p>Санта Бремор</p>
+          <p>Грошык</p>
+
+        </div>
+
+        <div
+          className="card"
+          style={{marginTop:"25px"}}
+        >
+
+          <h2>Контакты</h2>
+
+          <p>📞 +375 (29) 123-45-67</p>
+          <p>📧 LUDAinfoZONE@gmail.com</p>
+          <p>📍 г. Париж, ул. Игрушечная, 333</p>
+
+        </div>
 
       </div>
+
     )}
 
-    {page === "toys" && (
+    {page === "/toys" && (
       <div>
 
         <h2 className="page-title">
@@ -613,7 +1028,7 @@ if (!user) {
           </button>
         </div>
 
-        <div className="toys-grid">
+<div className="toys-grid">
 
   {toys.map(t => (
 
@@ -658,7 +1073,10 @@ if (!user) {
 
       <button
         className="buy-btn"
-        onClick={() => addToCart(t.id)}
+        onClick={(e) => {
+          e.stopPropagation();
+          addToCart(t.id);
+        }}
       >
         🛒 Добавить в корзину
       </button>
@@ -681,10 +1099,26 @@ if (!user) {
 
 </div>
 
-      </div>
-    )}
 
-    {page === "age" && (
+{hasMore && (
+  <div
+    style={{
+      textAlign:"center",
+      marginTop:"25px"
+    }}
+  >
+    <button
+      onClick={() => loadToys(false)}
+    >
+      Загрузить ещё
+    </button>
+  </div>
+)}
+
+</div>
+)}
+
+    {page === "/age" && (
 
       <div>
 
@@ -708,11 +1142,11 @@ if (!user) {
       </div>
     )}
 
-    {page === "toy" && selectedToy && (
+    {page === "/toy" && selectedToy && (
 
   <div className="card">
 
-    <button onClick={() => setPage("toys")}>
+    <button onClick={() => navigate("/toys")}>
       ← Назад
     </button>
 
@@ -775,7 +1209,7 @@ if (!user) {
 )}
 
 
-  {page === "profile" && (
+  {page === "/profile" && (
 
   <div className="card">
 
@@ -824,7 +1258,7 @@ if (!user) {
     <div style={{marginTop:"30px"}}>
 
       <button onClick={() => {
-        setPage("favorites");
+        navigate("/favorites");
         loadFavorites();
       }}>
         ❤️ Любимки
@@ -836,7 +1270,7 @@ if (!user) {
 
 )}
 
-  {page === "favorites" && (
+  {page === "/favorites" && (
 
   <div>
 
@@ -889,7 +1323,7 @@ if (!user) {
 )}
 
 
-  {page === "cart" && (
+  {page === "/cart" && (
 
   <div>
 
@@ -977,10 +1411,10 @@ if (!user) {
 
 )}
 
-
   </div>
  );
 }
+
 
 ReactDOM.createRoot(document.getElementById("root")).render(<App />);
 
