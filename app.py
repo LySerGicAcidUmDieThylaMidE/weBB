@@ -198,7 +198,7 @@ def reset_password():
 
     data = request.json
 
-    print("RESET REQUEST:", data) ##################################################
+    print("RESET REQUEST:", data) 
 
     user = User.query.filter_by(
         login=data.get("login")
@@ -237,21 +237,31 @@ def reset_password():
 
 @app.route("/api/toys")
 def get_toys():
-    toys = Toy.query.all()
+    limit = request.args.get("limit", 8, type=int)
+    offset = request.args.get("offset", 0, type=int)
 
-    return jsonify([
-        {
-            "id": t.id,
-            "name": t.name,
-            "description": t.description,
-            "price": float(t.price),
-            "manufacturer": t.manufacturer,
-            "quantity": t.quantity,
-            "min_age": t.min_age,
-            "image_url": t.image_url,
-            "category": t.category
-        } for t in toys
-    ])
+    query = Toy.query.order_by(Toy.id)
+
+    total = query.count()
+    toys = query.offset(offset).limit(limit).all()
+
+    return jsonify({
+        "items": [
+            {
+                "id": t.id,
+                "name": t.name,
+                "description": t.description,
+                "price": float(t.price),
+                "manufacturer": t.manufacturer,
+                "quantity": t.quantity,
+                "min_age": t.min_age,
+                "image_url": t.image_url,
+                "category": t.category
+            }
+            for t in toys
+        ],
+        "total": total
+    })
 
 
 @app.route("/api/toys/<int:id>")
@@ -479,13 +489,23 @@ def remove_favorite(toy_id):
 # ------------------ front ------------------
 
 @app.route("/")
-def index():
-    return send_from_directory("static", "index.html")
+@app.route("/<path:path>")
+def index(path=None):
+
+    if path and path.startswith("api"):
+        return jsonify({
+            "error": "API route not found"
+        }), 404
+
+    return send_from_directory(
+        "static",
+        "index.html"
+    )
 
 # ------------------ error ------------------
 
 @app.errorhandler(404)
-def not_found(e):
+def not_found():
 
     return jsonify({
         "error":"Not found"
@@ -496,9 +516,6 @@ def not_found(e):
 if __name__ == "__main__":
     with app.app_context():
         db.create_all()
-    app.run(debug=True)
-
-if __name__ == "__main__":
     app.run(debug=True)
 
 
