@@ -91,7 +91,8 @@ def register():
     user = User(
         login=data["login"],
         password_hash=generate_password_hash(data["password"]),
-        role=0
+        role=0,
+        secret_word=generate_password_hash(data["secret_word"])
     )
 
     db.session.add(user)
@@ -103,8 +104,16 @@ def register():
 @app.route("/api/login", methods=["POST"])
 def login():
     data = request.json
-
+    print("LOGIN DATA:", data)
     user = User.query.filter_by(login=data.get("login")).first()
+    if user:
+        print(
+            "PASSWORD CHECK:",
+            check_password_hash(
+                user.password_hash,
+                data.get("password")
+            )
+        )
 
     if user and check_password_hash(user.password_hash, data.get("password")):
         session["user_id"] = user.id
