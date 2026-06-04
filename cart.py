@@ -6,13 +6,11 @@ cart_bp = Blueprint("cart", __name__)
 @cart_bp.route("/cart", methods=["POST"])
 def add_to_cart():
     data = request.json
-
     item = CartItem(**data)
     db.session.add(item)
     db.session.commit()
 
     return jsonify({"message": "added to cart"})
-
 
 @cart_bp.route("/cart/<int:user_id>", methods=["GET"])
 def get_cart(user_id):
