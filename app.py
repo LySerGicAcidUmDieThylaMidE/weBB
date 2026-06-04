@@ -161,6 +161,28 @@ def change_password():
             "error":"Старый пароль неверный"
         }), 400
 
+    new_password = data["new_password"]
+
+    if len(new_password) < 6:
+        return jsonify({
+            "error": "Минимум 6 символов"
+        }), 400
+
+    if not re.search(r"[A-ZА-Я]", new_password):
+        return jsonify({
+            "error": "Добавьте заглавную букву"
+        }), 400
+
+    if not re.search(r"\d", new_password):
+        return jsonify({
+            "error": "Добавьте цифру"
+        }), 400
+
+    if not re.search(r"[!@#$%^&*()_+\-=]", new_password):
+        return jsonify({
+            "error": "Добавьте спецсимвол"
+        }), 400
+
     user.password_hash = generate_password_hash(
         data["new_password"]
     )
@@ -169,6 +191,46 @@ def change_password():
 
     return jsonify({
         "message":"Пароль изменён"
+    })
+
+@app.route("/api/reset-password",methods=["POST"])
+def reset_password():
+
+    data = request.json
+
+    print("RESET REQUEST:", data) ##################################################
+
+    user = User.query.filter_by(
+        login=data.get("login")
+    ).first()
+
+    if not user:
+        return jsonify({
+            "error":"Пользователь не найден"
+        }), 404
+
+    if not check_password_hash(
+        user.secret_word,
+        data.get("secret_word")
+    ):
+        return jsonify({
+            "error":"Неверное ключевое слово"
+        }), 400
+
+    new_password = data.get("new_password")
+
+    print("OLD HASH:", user.password_hash) 
+
+    user.password_hash = generate_password_hash(
+        new_password
+    )
+
+    db.session.commit()
+
+    print("NEW HASH:", user.password_hash)
+
+    return jsonify({
+        "message":"Пароль восстановлен"
     })
 
 # ------------------ toys ------------------
