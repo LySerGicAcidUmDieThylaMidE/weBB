@@ -6,6 +6,7 @@
   type="image/png"
   href="https://avatars.mds.yandex.net/i?id=a9d97cd9061e58b21ac85698bbe0742412ca9af2-3713143-images-thumbs&n=13"
 />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
 </head>
 <meta charset="UTF-8">
 <title>LudereZone</title>
@@ -37,6 +38,7 @@ body{
   backdrop-filter: blur(12px);
   padding:30px;
   box-shadow:0 0 25px rgba(50,205,50,0.35);
+  overflow:hidden;
 }
 
 .auth-wrapper{
@@ -55,7 +57,7 @@ h1,h2,h3{
 }
 
 input{
-  width:90%;
+  width:100%;
   height:60px;
   padding:10px;
   margin-top:15px;
@@ -77,6 +79,7 @@ button{
   color:white;
   font-size:15px;
   transition:0.3s;
+  max-width:100%;
 }
 
 button:hover{
@@ -119,6 +122,14 @@ button:hover{
   padding:20px;
   transition:0.3s;
   border:10px solid rgba(255,255,255,0.05);
+  display:flex;
+  flex-direction:column;
+}
+
+.toy-actions{
+  margin-top:auto;
+  display:flex;
+  gap:10px;
 }
 
 .toy-card:hover{
@@ -244,7 +255,7 @@ select{
   }
 }
 
-@media (max-width: 768px){
+@media (max-width: 768px) {
 
   .container{
     padding:15px;
@@ -253,48 +264,21 @@ select{
   .navbar{
     flex-direction:column;
     gap:15px;
-    align-items:stretch;
   }
 
   .nav-left{
+    width:100%;
     flex-wrap:wrap;
     justify-content:center;
-    gap:10px;
   }
 
   .nav-left button{
     flex:1;
-    min-width:140px;
+    min-width:120px;
   }
 
   .nav-title{
-    text-align:center;
     font-size:24px;
-  }
-
-  .home-box{
-    padding:25px;
-  }
-
-  .home-box h1{
-    font-size:30px;
-  }
-
-  .home-box p{
-    font-size:16px;
-  }
-
-  .toys-grid{
-    grid-template-columns:1fr;
-    gap:20px;
-  }
-
-  .toy-card{
-    padding:15px;
-  }
-
-  .toy-image{
-    height:180px;
   }
 
   .search-bar{
@@ -302,27 +286,33 @@ select{
   }
 
   .search-bar input,
-  .search-bar button,
-  .search-bar select{
+  .search-bar select,
+  .search-bar button{
     width:100%;
   }
 
-  input{
-    width:100%;
+  .toys-grid{
+    grid-template-columns:1fr;
   }
 
-  button{
-    width:100%;
+  .toy-image{
+    height:220px;
   }
 
   .auth-card{
     width:100%;
   }
 
-  .notification{
-    left:10px;
-    right:10px;
-    top:10px;
+  .home-box{
+    padding:25px;
+  }
+
+  .home-box h1{
+    font-size:32px;
+  }
+
+  .home-box p{
+    font-size:16px;
   }
 
 }
@@ -336,6 +326,7 @@ select{
 <script type="text/babel">
 
 function App() {
+  const API_URL = "http://localhost:5000";
   const [user, setUser] = React.useState(null);
   const [page, setPage] = React.useState(window.location.pathname || "/");
   const [login, setLogin] = React.useState("");
@@ -344,6 +335,7 @@ function App() {
 
   const [secretWord, setSecretWord] = React.useState("");
 
+  const [showPassword, setShowPassword] = React.useState(false);
   const [password, setPassword] = React.useState("");
   const [error, setError] = React.useState("");
   const [success, setSuccess] = React.useState("");
@@ -357,16 +349,20 @@ function App() {
   const [hasMore, setHasMore] = React.useState(true);
 
   const [query, setQuery] = React.useState("");
-  const [age, setAge] = React.useState("");
   const [favorites, setFavorites] = React.useState([])
   const [cart, setCart] = React.useState([]);
 
   const [category, setCategory] = React.useState("");
   const [sort, setSort] = React.useState("");
 
+  const isFavorite = (toyId) => {
+    return favorites.some(f => f.id === toyId);};
+
   const navigate = (path) => {
   window.history.pushState({}, "", path);
   setPage(path);
+
+
 };
 
 
@@ -398,6 +394,7 @@ function App() {
       if (data) {
         setUser(data.user);
         setLogin(data.user.login || "");
+        loadFavorites();
       }
     });
 }, []);
@@ -426,6 +423,7 @@ function App() {
     } else {
       setUser({login});
       navigate("/home");
+      loadFavorites();
     }
   };
 
@@ -582,10 +580,6 @@ const changePassword = async () => {
   setToys(data);
 };
 
-  const searchAge = async () => {
-    const res = await fetch(`/api/toys/age?age=${age}`); ////////////////////////////////
-    setToys(await res.json());
-  };
 
   const addToCart = async (id) => {
     await fetch("/api/cart", {
@@ -691,7 +685,7 @@ if (!user) {
             />
 
             <input
-              placeholder="Ключевое слово"
+              placeholder="Кличка первого домашнего животного"
               value={secretWord}
               onChange={e =>
                 setSecretWord(e.target.value)
@@ -728,13 +722,24 @@ if (!user) {
             />
 
             <input
-              type="password"
+              type={showPassword ? "text" : "password"}
               placeholder="Пароль"
               value={password}
-              onChange={e =>
-                setPassword(e.target.value)
+              onChange={e => setPassword(e.target.value)
               }
             />
+
+            <button
+              type="button"
+              onClick={() =>
+                setShowPassword(!showPassword)
+              }
+            >
+              {showPassword
+                ? "👁️‍🗨️"
+                : "👁️"}
+            </button>
+
 
             {page === "/login" ? (
 
@@ -781,7 +786,7 @@ if (!user) {
         {page === "/register" && (
 
           <input
-            placeholder="Ключевое слово"
+            placeholder="Кличка первого домашнего животного"
             value={secretWord}
             onChange={e =>
               setSecretWord(e.target.value)
@@ -838,10 +843,6 @@ if (!user) {
           loadToys(true);
         }}>
           Игрушки
-        </button>
-
-        <button onClick={() => navigate("/age")}>
-          Подбор по возрасту
         </button>
 
         <button onClick={logout}>
@@ -1071,26 +1072,33 @@ if (!user) {
         В наличии: {t.quantity}
       </div>
 
-      <button
-        className="buy-btn"
-        onClick={(e) => {
-          e.stopPropagation();
-          addToCart(t.id);
-        }}
-      >
-        🛒 Добавить в корзину
-      </button>
+      <div className="toy-actions">
+          <button
+            className="buy-btn"
+            onClick={(e) => {
+              e.stopPropagation();
+              addToCart(t.id);
+            }}
+          >
+            🛒 Добавить в корзину
+          </button>
 
-      <button
-        onClick={(e) => {
+        <button
+          disabled={isFavorite(t.id)}
+          style={{
+            opacity: isFavorite(t.id) ? 0.5 : 1,
+            cursor: isFavorite(t.id) ? "not-allowed" : "pointer"
+          }}
+          onClick={(e) => {
+              e.stopPropagation();
+              addToFavorites(t.id);
+              loadFavorites();
+          }}
+        >
+          ❤️
+        </button>
+      </div>
 
-            e.stopPropagation();
-
-            addToFavorites(t.id);
-        }}
-      >
-        ❤️
-      </button>
 
 
     </div>
@@ -1118,29 +1126,6 @@ if (!user) {
 </div>
 )}
 
-    {page === "/age" && (
-
-      <div>
-
-        <h2 className="page-title">
-          Подбор по возрасту
-        </h2>
-
-        <div className="search-bar">
-
-          <input
-            placeholder="Введите возраст..."
-            onChange={e => setAge(e.target.value)}
-          />
-
-          <button onClick={searchAge}>
-            Подобрать
-          </button>
-
-        </div>
-
-      </div>
-    )}
 
     {page === "/toy" && selectedToy && (
 
@@ -1156,8 +1141,9 @@ if (!user) {
         src={selectedToy.image_url}
         className="toy-image"
         style={{
+          width:"100%",
           maxWidth:"400px",
-          height:"400px",
+          height:"auto",
           objectFit:"cover"
         }}
       />
@@ -1235,18 +1221,15 @@ if (!user) {
         type="password"
         placeholder="Старый пароль"
         value={oldPassword}
-        onChange={e =>
-          setOldPassword(e.target.value)
-        }
+        onChange={e => setOldPassword(e.target.value)}
       />
+
 
       <input
         type="password"
         placeholder="Новый пароль"
         value={newPassword}
-        onChange={e =>
-          setNewPassword(e.target.value)
-        }
+        onChange={e =>setNewPassword(e.target.value)}
       />
 
       <button onClick={changePassword}>
