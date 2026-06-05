@@ -1,1 +1,1406 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <link
+  rel="icon"
+  type="image/png"
+  href="https://avatars.mds.yandex.net/i?id=a9d97cd9061e58b21ac85698bbe0742412ca9af2-3713143-images-thumbs&n=13"
+/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+<meta charset="UTF-8">
+<title>LudereZone</title>
 
+<script src="https://unpkg.com/react@18/umd/react.development.js"></script>
+<script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+<script src="https://unpkg.com/babel-standalone@6/babel.min.js"></script>
+
+<style>
+
+*{box-sizing:border-box;}
+
+body{
+  margin:0;
+  font-family: 'Comic Sans MS';
+  background:
+    radial-gradient(circle at top left,#1f4037,#0f2027);
+  color:white;
+  min-height:100vh;
+}
+
+.container{
+  padding:40px;
+}
+
+.card{
+  background:rgba(255,255,255,0.06);
+  border-radius:25px;
+  backdrop-filter: blur(12px);
+  padding:30px;
+  box-shadow:0 0 25px rgba(50,205,50,0.35);
+  overflow:hidden;
+}
+
+.auth-wrapper{
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  min-height:100vh;
+}
+
+.auth-card{
+  width:450px;
+}
+
+h1,h2,h3{
+  text-shadow:0 0 12px #32CD32;
+}
+
+input{
+  width:100%;
+  height:60px;
+  padding:10px;
+  margin-top:15px;
+  border:none;
+  border-radius:12px;
+  background:#111827;
+  color:white;
+  font-size:16px;
+}
+
+button{
+  border:none;
+  border-radius:5px;
+  height:60px;
+  padding:10px 16px;
+  margin-top:0px;
+  cursor:pointer;
+  background:linear-gradient(135deg,#32CD32,#228B22);
+  color:white;
+  font-size:15px;
+  transition:0.3s;
+  max-width:100%;
+}
+
+button:hover{
+  transform:translateY(-2px);
+  box-shadow:0 0 20px #32CD32;
+}
+
+.navbar{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  margin-bottom:30px;
+}
+
+.nav-left{
+  display:flex;
+  gap:20px;
+}
+
+.nav-title{
+  font-size:28px;
+  font-weight:bold;
+  color:#90EE90;
+  text-shadow:0 0 15px #32CD32;
+}
+
+.page-title{
+  margin-bottom:25px;
+}
+
+.toys-grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fill,minmax(260px,1fr));
+  gap:70px;
+}
+
+.toy-card{
+  background:rgba(255,255,255,0.06);
+  border-radius:10px;
+  padding:20px;
+  transition:0.3s;
+  border:10px solid rgba(255,255,255,0.05);
+  display:flex;
+  flex-direction:column;
+}
+
+.toy-actions{
+  margin-top:auto;
+  display:flex;
+  gap:10px;
+}
+
+.toy-card:hover{
+  transform:translateY(-5px);
+  box-shadow:0 0 25px rgba(50,205,50,0.35);
+}
+
+.toy-name{
+  font-size:22px;
+  margin-bottom:10px;
+  color:#90EE90;
+}
+
+.toy-price{
+  font-size:20px;
+  margin:10px 0;
+}
+
+.toy-info{
+  color:#ccc;
+  margin-top:5px;
+}
+
+.toy-image{
+  width:100%;
+  height:240px;
+  object-fit:cover;
+  border-radius:16px;
+  margin-bottom:15px;
+  display:block;
+  background:#111827;
+}
+
+.search-bar{
+  display:flex;
+  gap:10px;
+  margin-bottom:25px;
+}
+
+.search-bar input{
+  margin-top:0;
+}
+
+select{
+  padding:15px;
+  border:none;
+  border-radius:12px;
+  background:#111827;
+  color:white;
+  font-size:16px;
+}
+
+.error{
+  color:#ff6b6b;
+  margin-top:15px;
+}
+
+.success{
+  color:#90EE90;
+  margin-top:15px;
+}
+
+.home-box{
+  text-align:center;
+  padding:60px;
+}
+
+.home-box h1{
+  font-size:48px;
+}
+
+.home-box p{
+  font-size:20px;
+  color:#ccc;
+}
+
+.toy-info{
+  margin-top:8px;
+  color:#d1d5db;
+  line-height:1.4;
+}
+
+.toy-description{
+  margin-top:10px;
+  color:#cbd5e1;
+}
+
+.notification{
+  position:fixed;
+  top:20px;
+  right:20px;
+  z-index:9999;
+  padding:15px 25px;
+  border-radius:12px;
+  background:
+    linear-gradient(
+      135deg,
+      #32CD32,
+      #228B22
+    );
+  color:white;
+  font-weight:bold;
+  box-shadow:
+    0 0 20px rgba(
+      50,
+      205,
+      50,
+      0.5
+    );
+  animation:
+    slideIn 0.3s ease;
+}
+@keyframes slideIn{
+  from{
+    opacity:0;
+    transform:
+      translateX(100%);
+  }
+  to{
+    opacity:1;
+    transform:
+      translateX(0);
+  }
+}
+
+@media (max-width: 768px) {
+
+  .container{
+    padding:15px;
+  }
+
+  .navbar{
+    flex-direction:column;
+    gap:15px;
+  }
+
+  .nav-left{
+    width:100%;
+    flex-wrap:wrap;
+    justify-content:center;
+  }
+
+  .nav-left button{
+    flex:1;
+    min-width:120px;
+  }
+
+  .nav-title{
+    font-size:24px;
+  }
+
+  .search-bar{
+    flex-direction:column;
+  }
+
+  .search-bar input,
+  .search-bar select,
+  .search-bar button{
+    width:100%;
+  }
+
+  .toys-grid{
+    grid-template-columns:1fr;
+  }
+
+  .toy-image{
+    height:220px;
+  }
+
+  .auth-card{
+    width:100%;
+  }
+
+  .home-box{
+    padding:25px;
+  }
+
+  .home-box h1{
+    font-size:32px;
+  }
+
+  .home-box p{
+    font-size:16px;
+  }
+
+}
+
+</style>
+</head>
+
+<body>
+<div id="root"></div>
+
+<script type="text/babel">
+
+function App() {
+  const API_URL = "http://localhost:5000";
+  const [user, setUser] = React.useState(null);
+  const [page, setPage] = React.useState(window.location.pathname || "/");
+  const [login, setLogin] = React.useState("");
+  const [oldPassword, setOldPassword] = React.useState("");
+  const [newPassword, setNewPassword] = React.useState("");
+
+  const [secretWord, setSecretWord] = React.useState("");
+
+  const [showPassword, setShowPassword] = React.useState(false);
+  const [password, setPassword] = React.useState("");
+  const [error, setError] = React.useState("");
+  const [success, setSuccess] = React.useState("");
+
+  const [notification, setNotification] = React.useState("");
+
+  const [selectedToy, setSelectedToy] = React.useState(null);
+  const [toys, setToys] = React.useState([]);
+
+  const [offset, setOffset] = React.useState(0);
+  const [hasMore, setHasMore] = React.useState(true);
+
+  const [query, setQuery] = React.useState("");
+  const [favorites, setFavorites] = React.useState([])
+  const [cart, setCart] = React.useState([]);
+
+  const [category, setCategory] = React.useState("");
+  const [sort, setSort] = React.useState("");
+
+  const isFavorite = (toyId) => {
+    return favorites.some(f => f.id === toyId);};
+
+  const navigate = (path) => {
+  window.history.pushState({}, "", path);
+  setPage(path);
+
+
+};
+
+
+  React.useEffect(() => {
+
+  const onPopState = () => {
+    setPage(window.location.pathname);
+  };
+
+  window.addEventListener(
+    "popstate",
+    onPopState
+  );
+
+  return () => {
+    window.removeEventListener(
+      "popstate",
+      onPopState
+    );
+  };
+
+}, []);
+
+
+  React.useEffect(() => {
+  fetch("/api/me")
+    .then(res => res.json())
+    .then(data => {
+      if (data) {
+        setUser(data.user);
+        setLogin(data.user.login || "");
+        loadFavorites();
+      }
+    });
+}, []);
+
+    React.useEffect(() => {
+
+      if (user && page === "/") {
+        navigate("/home");
+      }
+
+    }, [user]);
+
+  // ---------------- auth ----------------
+
+  const handleLogin = async () => {
+    const res = await fetch("/api/login", {
+      method: "POST",
+      headers: {"Content-Type": "application/json"},
+      body: JSON.stringify({login, password})
+    });
+
+    const data = await res.json();
+
+    if (!res.ok) {
+      setError(data.error);
+    } else {
+      setUser({login});
+      navigate("/home");
+      loadFavorites();
+    }
+  };
+
+  const handleRegister = async () => {
+    setError("");
+    setSuccess("");
+    const res = await fetch("/api/register", {
+      method: "POST",
+      headers: {"Content-Type": "application/json"},
+      body: JSON.stringify({login, password, secret_word: secretWord})
+    });
+
+    const data = await res.json();
+
+    if (!res.ok) {
+      setError(data.error);
+    } else {
+      navigate("/login");
+    }
+  };
+
+  const logout = async () => {
+    await fetch("/api/logout");
+    setUser(null);
+    navigate("/login");
+  };
+
+
+const resetPassword = async () => {
+
+  setError("");
+  setSuccess("");
+
+  const res = await fetch(
+    "/api/reset-password",
+    {
+      method:"POST",
+
+      headers:{
+        "Content-Type":"application/json"
+      },
+
+      body:JSON.stringify({
+        login,
+        secret_word: secretWord,
+        new_password: newPassword
+      })
+    }
+  );
+
+  const data = await res.json();
+
+  if(res.ok){
+
+    setSuccess("Пароль восстановлен");
+
+    navigate("/login");
+  }
+  else{
+    setError(data.error);
+  }
+};
+
+
+const changePassword = async () => {
+
+  setError("");
+  setSuccess("");
+
+  const res = await fetch(
+    "/api/change-password",
+    {
+      method:"POST",
+      headers:{
+        "Content-Type":"application/json"
+      },
+      body:JSON.stringify({
+        old_password:oldPassword,
+        new_password:newPassword
+      })
+    }
+  );
+
+  const data = await res.json();
+
+  if(res.ok){
+
+    setSuccess("Пароль изменён");
+
+    setOldPassword("");
+    setNewPassword("");
+  }
+  else{
+    setError(data.error);
+  }
+};
+
+
+
+  // ---------------- data ----------------
+
+    const LIMIT = 8;
+    const loadToys = async (reset = false) => {
+      const currentOffset = reset ? 0 : offset;
+
+      const res = await fetch(`/api/toys?limit=${LIMIT}&offset=${currentOffset}`);
+      const data = await res.json();
+
+      if (reset) {
+        setToys(data.items);
+      } else {
+        setToys(prev => [...prev, ...data.items]);
+      }
+
+      const newOffset = currentOffset + data.items.length;
+      setOffset(newOffset);
+
+      setHasMore(newOffset < data.total);
+    };
+
+  const search = async () => {
+    const res = await fetch(`/api/toys/search?q=${query}`);
+    setToys(await res.json());
+  };
+
+  const filterAndSort = async () => {
+
+  const res = await fetch("/api/toys?limit=9999");
+  let result = await res.json();
+  let data = result.items;
+
+  //фильтр
+  if (category) {
+    data = data.filter(
+      t => t.category === category
+    );
+  }
+
+  //сортировка
+  if (sort === "price_asc") {
+    data.sort((a,b) => a.price - b.price);
+  }
+
+  if (sort === "price_desc") {
+    data.sort((a,b) => b.price - a.price);
+  }
+
+  if (sort === "name") {
+    data.sort((a,b) =>
+      a.name.localeCompare(b.name)
+    );
+  }
+
+  setToys(data);
+};
+
+
+  const addToCart = async (id) => {
+    await fetch("/api/cart", {
+      method: "POST",
+      headers: {"Content-Type": "application/json"},
+      body: JSON.stringify({toy_id: id})
+    });
+    showNotification("Товар добавлен в корзину");
+  };
+
+  const loadCart = async () => {
+    const res = await fetch("/api/cart");
+    const data = await res.json();
+    setCart(data);
+  };
+
+
+const removeFromCart = async (id) => {
+  await fetch(`/api/cart/${id}`, {
+    method:"DELETE"
+  });
+  loadCart();
+};
+
+const openToy = async (id) => {
+  const res = await fetch(`/api/toys/${id}`);
+  const data = await res.json();
+  setSelectedToy(data);
+  setPage("/toy");
+};
+
+  const addToFavorites = async (id) => {
+  await fetch("/api/favorites", {
+    method:"POST",
+    headers:{
+      "Content-Type":"application/json"
+    },
+    body:JSON.stringify({
+      toy_id:id
+    })
+  });
+  showNotification("Добавлено в любимки");
+};
+
+const loadFavorites = async () => {
+  const res = await fetch("/api/favorites");
+  const data = await res.json();
+  setFavorites(data);
+};
+
+
+const removeFavorite = async (id) => {
+  await fetch(`/api/favorites/${id}`, {
+    method:"DELETE"
+  });
+  loadFavorites();
+};
+
+const showNotification = (message) => {
+  setNotification(message);
+  setTimeout(() => {
+    setNotification("");
+  }, 3000);
+};
+
+  // ---------------- UI ----------------
+
+if (!user) {
+
+  if (
+    page !== "/login" &&
+    page !== "/register" &&
+    page !== "/reset"
+  ) {
+
+    navigate("/login");
+    return null;
+  }
+
+  return (
+    <div className="auth-wrapper">
+
+      <div className="card auth-card">
+
+        <h2>
+          {page === "/login" && "Вход в LudereZone"}
+
+          {page === "/register" && "Регистрация"}
+
+          {page === "/reset" && "Восстановление пароля"}
+        </h2>
+
+                {page === "/reset" ? (
+
+          <div>
+
+            <input
+              placeholder="Логин"
+              value={login}
+              onChange={e =>
+                setLogin(e.target.value)
+              }
+            />
+
+            <input
+              placeholder="Кличка первого домашнего животного"
+              value={secretWord}
+              onChange={e =>
+                setSecretWord(e.target.value)
+              }
+            />
+
+            <input
+              type="password"
+              placeholder="Новый пароль"
+              value={newPassword}
+              onChange={e =>
+                setNewPassword(e.target.value)
+              }
+            />
+
+            <button
+              onClick={resetPassword}
+            >
+              Восстановить пароль
+            </button>
+
+          </div>
+
+        ) : (
+
+          <div>
+
+            <input
+              placeholder="Логин"
+              value={login}
+              onChange={e =>
+                setLogin(e.target.value)
+              }
+            />
+
+            <input
+              type={showPassword ? "text" : "password"}
+              placeholder="Пароль"
+              value={password}
+              onChange={e => setPassword(e.target.value)
+              }
+            />
+
+            <button
+              type="button"
+              onClick={() =>
+                setShowPassword(!showPassword)
+              }
+            >
+              {showPassword
+                ? "👁️‍🗨️"
+                : "👁️"}
+            </button>
+
+
+            {page === "/login" ? (
+
+              <button onClick={handleLogin}>
+                Войти
+              </button>
+
+            ) : (
+
+              <button onClick={handleRegister}>
+                Зарегистрироваться
+              </button>
+
+            )}
+
+          </div>
+
+        )}
+
+        <div
+          className="link"
+          onClick={() => navigate("/reset")}
+        >
+          Забыли пароль?
+        </div>
+
+        {error && <div className="error">{error}</div>}
+        {success && <div className="success">{success}</div>}
+
+        <div
+          className="link"
+          onClick={() => {
+            navigate(page === "/login" ? "/register" : "/login");
+            setError("");
+            setSuccess("");
+          }}
+        >
+          {page === "/login"
+            ? "Нет аккаунта?"
+            : "Уже есть аккаунт?"}
+        </div>
+
+
+        {page === "/register" && (
+
+          <input
+            placeholder="Кличка первого домашнего животного"
+            value={secretWord}
+            onChange={e =>
+              setSecretWord(e.target.value)
+            }
+          />
+
+        )}
+
+      </div>
+    </div>
+  );
+}
+  return (
+  <div className="container">
+
+    {notification && (
+      <div className="notification">
+        {notification}
+      </div>
+    )}
+
+    <div className="navbar">
+
+      <button onClick={() => {
+         navigate("/cart");
+         loadCart();
+      }}>
+        🛒 Корзина
+      </button>
+
+
+      <button onClick={() => {
+        navigate("/favorites");
+        loadFavorites();
+      }}>
+        ❤️ Любимки
+      </button>
+
+      <button onClick={() => navigate("/profile")}>
+          👤 Профиль
+      </button>
+
+      <div className="nav-title">
+        LudereZone
+      </div>
+
+      <div className="nav-left">
+        <button onClick={() => navigate("/home")}>
+          Главная
+        </button>
+
+        <button onClick={() => {
+          navigate("/toys");
+          loadToys(true);
+        }}>
+          Игрушки
+        </button>
+
+        <button onClick={logout}>
+          Выйти
+        </button>
+      </div>
+    </div>
+
+    {page === "/home" && (
+
+      <div>
+
+        <div className="card home-box">
+
+          <h1>🎮 Добро пожаловать в LudereZone</h1>
+
+          <div className="toys-grid">
+              <div className="toy-card">
+                <h2>6+</h2>
+                <p>Товаров</p>
+              </div>
+
+              <div className="toy-card">
+                <h2>11+</h2>
+                <p>Покупателей</p>
+              </div>
+
+              <div className="toy-card">
+                <h2>24/7</h2>
+                <p>Поддержка</p>
+              </div>
+          </div>
+
+          <p>
+            Магазин всяких игрушек, а чего тебе ещё надо?
+          </p>
+
+          <button onClick={() => {
+            navigate("/toys");
+            loadToys(true);
+          }}>
+            Перейти в каталог
+          </button>
+
+        </div>
+
+        <div
+          className="card"
+          style={{marginTop:"25px"}}
+        >
+
+          <h2>Почему выбирают нас?</h2>
+
+          <p>✅ Более 2 товаров в каталоге</p>
+          <p>✅ Быстрая обработка заказов</p>
+          <p>✅ Удобный поиск и фильтрация</p>
+
+        </div>
+
+        <div
+          className="card"
+          style={{marginTop:"25px"}}
+        >
+
+          <h2>Популярные категории</h2>
+
+          <div className="toys-grid">
+
+            <div className="toy-card">
+              Пазлы
+            </div>
+
+            <div className="toy-card">
+              Конструкторы
+            </div>
+
+            <div className="toy-card">
+              Мягкие игрушки
+            </div>
+
+          </div>
+
+        </div>
+
+        <div
+          className="card"
+          style={{marginTop:"25px"}}
+        >
+
+          <h2>Наши партнёры</h2>
+
+          <p>Савушкин</p>
+          <p>Sumsung</p>
+          <p>Санта Бремор</p>
+          <p>Грошык</p>
+
+        </div>
+
+        <div
+          className="card"
+          style={{marginTop:"25px"}}
+        >
+
+          <h2>Контакты</h2>
+
+          <p>📞 +375 (29) 123-45-67</p>
+          <p>📧 LUDAinfoZONE@gmail.com</p>
+          <p>📍 г. Париж, ул. Игрушечная, 333</p>
+
+        </div>
+
+      </div>
+
+    )}
+
+    {page === "/toys" && (
+      <div>
+
+        <h2 className="page-title">
+          Каталог игрушек
+        </h2>
+
+        <div className="search-bar">
+
+        <div className="search-bar">
+
+  <select
+    value={category}
+    onChange={e => setCategory(e.target.value)}
+  >
+    <option value="">
+      Все категории
+    </option>
+
+    <option value="Конструкторы">
+      Конструкторы
+    </option>
+
+    <option value="Роботы">
+      Роботы
+    </option>
+
+    <option value="Игровые наборы">
+      Игровые наборы
+    </option>
+
+  </select>
+
+  <select
+    value={sort}
+    onChange={e => setSort(e.target.value)}
+  >
+    <option value="">
+      Без сортировки
+    </option>
+
+    <option value="price_asc">
+      Цена ↑
+    </option>
+
+    <option value="price_desc">
+      Цена ↓
+    </option>
+
+    <option value="name">
+      По названию
+    </option>
+
+  </select>
+
+  <button onClick={filterAndSort}>
+    Применить
+  </button>
+
+</div>
+
+          <input
+            placeholder="Поиск игрушек..."
+            onChange={e => setQuery(e.target.value)}
+          />
+
+          <button onClick={search}>
+            Найти
+          </button>
+        </div>
+
+<div className="toys-grid">
+
+  {toys.map(t => (
+
+    <div className="toy-card"
+        key={t.id}
+        onClick={() => openToy(t.id)}
+    >
+
+      <div className="age-badge">
+        {t.min_age}+
+      </div>
+
+      <img
+        className="toy-image"
+        src={t.image_url || "/static/images/no-image.jpg"}
+        alt={t.name}
+      />
+
+      <div className="toy-name">
+        {t.name}
+      </div>
+
+      <div className="toy-description">
+        {t.description}
+      </div>
+
+      <div className="toy-price">
+        {t.price} BYN
+      </div>
+
+      <div className="toy-info">
+        Производитель: {t.manufacturer}
+      </div>
+
+      <div className="toy-info">
+        Категория: {t.category}
+      </div>
+
+      <div className="stock">
+        В наличии: {t.quantity}
+      </div>
+
+      <div className="toy-actions">
+          <button
+            className="buy-btn"
+            onClick={(e) => {
+              e.stopPropagation();
+              addToCart(t.id);
+            }}
+          >
+            🛒 Добавить в корзину
+          </button>
+
+        <button
+          disabled={isFavorite(t.id)}
+          style={{
+            opacity: isFavorite(t.id) ? 0.5 : 1,
+            cursor: isFavorite(t.id) ? "not-allowed" : "pointer"
+          }}
+          onClick={(e) => {
+              e.stopPropagation();
+              addToFavorites(t.id);
+              loadFavorites();
+          }}
+        >
+          ❤️
+        </button>
+      </div>
+
+
+
+    </div>
+
+  ))}
+
+</div>
+
+
+{hasMore && (
+  <div
+    style={{
+      textAlign:"center",
+      marginTop:"25px"
+    }}
+  >
+    <button
+      onClick={() => loadToys(false)}
+    >
+      Загрузить ещё
+    </button>
+  </div>
+)}
+
+</div>
+)}
+
+
+    {page === "/toy" && selectedToy && (
+
+  <div className="card">
+
+    <button onClick={() => navigate("/toys")}>
+      ← Назад
+    </button>
+
+    <div style={{marginTop:"25px"}}>
+
+      <img
+        src={selectedToy.image_url}
+        className="toy-image"
+        style={{
+          width:"100%",
+          maxWidth:"400px",
+          height:"auto",
+          objectFit:"cover"
+        }}
+      />
+
+      <h1>{selectedToy.name}</h1>
+
+      <div className="toy-price">
+        {selectedToy.price} BYN
+      </div>
+
+      <div className="toy-description">
+        {selectedToy.description}
+      </div>
+
+      <div className="toy-info">
+        Производитель: {selectedToy.manufacturer}
+      </div>
+
+      <div className="toy-info">
+        Категория: {selectedToy.category}
+      </div>
+
+      <div className="toy-info">
+        Возраст: {selectedToy.min_age}+
+      </div>
+
+      <div className="toy-info">
+        В наличии: {selectedToy.quantity}
+      </div>
+
+      <button
+        onClick={() => addToCart(selectedToy.id)}
+      >
+        🛒 Добавить в корзину
+      </button>
+
+      <button
+        onClick={() =>
+          addToFavorites(selectedToy.id)
+        }
+      >
+        ❤️ В любимки
+      </button>
+
+    </div>
+
+  </div>
+
+)}
+
+
+  {page === "/profile" && (
+
+  <div className="card">
+
+    <h1>
+      Личный кабинет
+    </h1>
+
+    <div className="toy-info">
+      Логин: {login}
+    </div>
+
+    <div className="toy-info">
+      Роль: Пользователь
+    </div>
+
+    <div style={{marginTop:"30px"}}>
+
+      <h2>
+        Смена пароля
+      </h2>
+
+      <input
+        type="password"
+        placeholder="Старый пароль"
+        value={oldPassword}
+        onChange={e => setOldPassword(e.target.value)}
+      />
+
+
+      <input
+        type="password"
+        placeholder="Новый пароль"
+        value={newPassword}
+        onChange={e =>setNewPassword(e.target.value)}
+      />
+
+      <button onClick={changePassword}>
+        Изменить пароль
+      </button>
+
+    </div>
+
+    <div style={{marginTop:"30px"}}>
+
+      <button onClick={() => {
+        navigate("/favorites");
+        loadFavorites();
+      }}>
+        ❤️ Любимки
+      </button>
+
+    </div>
+
+  </div>
+
+)}
+
+  {page === "/favorites" && (
+
+  <div>
+
+    <h2 className="page-title">
+      ❤️ Любимки
+    </h2>
+
+    <div className="toys-grid">
+
+      {favorites.map(t => (
+
+        <div
+          className="toy-card"
+          key={t.id}
+          onClick={() => openToy(t.id)}
+        >
+
+          <img
+            className="toy-image"
+            src={t.image_url}
+          />
+
+          <div className="toy-name">
+            {t.name}
+          </div>
+
+          <div className="toy-price">
+            {t.price} BYN
+          </div>
+
+          <button
+            onClick={(e) => {
+
+              e.stopPropagation();
+
+              removeFavorite(t.id);
+            }}
+          >
+            ❌ Удалить
+          </button>
+
+        </div>
+
+      ))}
+
+    </div>
+
+  </div>
+
+)}
+
+
+  {page === "/cart" && (
+
+  <div>
+
+    <h2 className="page-title">
+      🛒 Корзина
+    </h2>
+
+    {cart.length === 0 && (
+      <div className="card">
+        Корзина пуста
+      </div>
+    )}
+
+    <div className="toys-grid">
+
+      {cart.map(item => (
+
+        <div
+          className="toy-card"
+          key={item.cart_id}
+        >
+
+          <img
+            className="toy-image"
+            src={item.toy.image_url}
+          />
+
+          <div className="toy-name">
+            {item.toy.name}
+          </div>
+
+          <div className="toy-price">
+            {item.toy.price} BYN
+          </div>
+
+          <div className="toy-info">
+            Количество: {item.quantity}
+          </div>
+
+          <button
+            onClick={() =>
+              removeFromCart(item.cart_id)
+            }
+          >
+            ❌ Удалить
+          </button>
+
+        </div>
+
+      ))}
+
+    </div>
+
+    {cart.length > 0 && (
+
+      <div
+        className="card"
+        style={{marginTop:"30px"}}
+      >
+
+        <h2>
+
+          Итого:
+
+          {" "}
+
+          {cart.reduce(
+            (sum, item) =>
+              sum + (
+                item.toy.price *
+                item.quantity
+              ),
+            0
+          ).toFixed(2)}
+
+          {" "}BYN
+
+        </h2>
+
+      </div>
+
+    )}
+
+  </div>
+
+)}
+
+  </div>
+ );
+}
+
+
+ReactDOM.createRoot(document.getElementById("root")).render(<App />);
+
+</script>
+</body>
+</html>
