@@ -3,3 +3,5 @@ flask_sqlalchemy
 pymysql
 cryptography
 werkzeug
+flask-cors
+gunicorn
