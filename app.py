@@ -505,7 +505,7 @@ def index(path=None):
 # ------------------ error ------------------
 
 @app.errorhandler(404)
-def not_found():
+def not_found(e):
 
     return jsonify({
         "error":"Not found"
