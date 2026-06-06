@@ -1,5 +1,13 @@
 import os
+
 class Config:
     SECRET_KEY = os.getenv("SECRET_KEY", "super_secret_key")
-    app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get('DATABASE_URL', 'mysql+pymysql://root@localhost/my_db')
+    
+    # Сначала проверяем переменную DATABASE_URL от Render. 
+    # Если её нет — включается ваша локальная база.
+    SQLALCHEMY_DATABASE_URI = os.getenv(
+        'DATABASE_URL', 
+        'mysql+pymysql://root:1111@localhost/luderezone'
+    )
+    
     SQLALCHEMY_TRACK_MODIFICATIONS = False
