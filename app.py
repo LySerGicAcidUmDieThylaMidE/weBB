@@ -1,6 +1,8 @@
 from flask import Flask, request, jsonify, session, send_from_directory
 from flask_sqlalchemy import SQLAlchemy
+from flask_cors import CORS
 from werkzeug.security import check_password_hash, generate_password_hash
+from config import Config
 import re
 
 app = Flask(
@@ -9,8 +11,8 @@ app = Flask(
 )
 
 app.secret_key = "secret_key"
-app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+pymysql://root:1111@localhost/luderezone'
-app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+app.config.from_object(Config)
+CORS(app)
 
 db = SQLAlchemy(app)
 
@@ -512,10 +514,10 @@ def not_found(e):
     }), 404
 
 # ------------------ main ------------------
+with app.app_context():
+    db.create_all()
 
 if __name__ == "__main__":
-    with app.app_context():
-        db.create_all()
     app.run(debug=True)
 
 
